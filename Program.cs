@@ -41,12 +41,7 @@ namespace Graphs
             var localans = new List<Point>();
             for (int i = startout; i < points.Count; i++)
             {
-                bool check = true;
-                foreach (int k in Used)
-                {
-                    if (k == points[i].Number) { check = false; break; }
-                }
-                if (check)
+                if (!Used.Contains(points[i].Number))
                 {
                     localans.Add(points[i]);
                 }
@@ -122,9 +117,9 @@ namespace Graphs
                 {
                     tempans.Add(points[i]);
                 }
-                if (tempans.Count > locals.Count)
-                    locals = new List<Point>(tempans);
             }
+            if (tempans.Count > locals.Count)
+                locals = new List<Point>(tempans);
         }
         static void FindShuffle_ParallelNested(ref List<Point> points, List<int> LocalUsed, int v, int startout,ref List<Point> locals)
         {
