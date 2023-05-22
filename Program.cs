@@ -65,22 +65,12 @@ namespace Graphs
                 {
                     foreach (var l in points[n].Connections)
                     {
-                        //bool check = true;
-                        //foreach(var r in Used)
-                        //{
-                        //    if (l == r) { check = false; }
-                        //}
-                        //if (check)
-                        //{
-                        //    Used.Add(l);
-                        //}
 
                         if(!Used.Contains(l))
                         {
                             Used.Add(l);
                         }
                     }
-                    //Used.AddRange(points[n].Connections);
                 }
                 FindShuffle_Nested(points, n, startout);
             }
@@ -93,17 +83,6 @@ namespace Graphs
                 Used.AddRange(points[i].Connections);
                 FindShuffle_Nested(points, i, i);
 
-                //Console.WriteLine(i + " Ответ на данный момент");
-                //foreach (Point p in ans)
-                //{
-                //    Console.WriteLine(p.ToString());
-                //}
-                //Console.WriteLine("Список соединений на этот момент");
-                //foreach (int j in Used)
-                //{
-                //    Console.Write(j + ",");
-                //}
-                //Console.WriteLine();
             }
         }
 
