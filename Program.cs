@@ -185,7 +185,7 @@ namespace Graphs
         static void Main(string[] args)
         {
             var Points = new List<Point>();
-            Points = Test();
+            Points = Init();
             var sw = new Stopwatch();
             sw.Start();
             Console.WriteLine("Последовательный");
