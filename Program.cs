@@ -33,101 +33,91 @@ namespace Graphs
     class Program
     {
         static object locker = new object();
-        static List<int> Used = new List<int>();
         static List<Point> ans = new List<Point>();
 
-        static void Check(List<Point> points, int startout)
+        static void Check(ref List<Point> points,  ref List<Point> locused)
         {
-            var localans = new List<Point>();
-            for (int i = startout; i < points.Count; i++)
+            if(ans.Count < locused.Count)
             {
-                if (!Used.Contains(points[i].Number))
-                {
-                    localans.Add(points[i]);
-                }
-            }
-            if (localans.Count > ans.Count)
-            {
-                ans = new List<Point>(localans);
+                ans = new List<Point>(locused);
             }
         }
-
-        static void FindShuffle_Nested(List<Point> points, int b, int startout)
+        static void FindShuffle_nested(ref List<Point> points, int tostart, List<Point> localusedpoints)
         {
-            int v = b + 1;
-            if (v == points.Count)
+            int n = tostart + 1;
+            if (n == points.Count)
             {
-                Check(points, startout);
+                Check(ref points, ref localusedpoints);
             }
-            for (int n = v; n < points.Count; n++)
+            for (int i = n; i < points.Count; i++)
             {
-                if (!Used.Contains(points[n].Number))
-                {
-                    foreach (var l in points[n].Connections)
+                var tempcon = new List<int>(points[i].Connections);
+                bool check = true;
+                foreach (var p in localusedpoints)
+                    if (tempcon.Contains(p.Number))
                     {
-
-                        if(!Used.Contains(l))
-                        {
-                            Used.Add(l);
-                        }
+                        check = false; break;
                     }
+                var newused= new List<Point>(localusedpoints);
+                if(check)
+                {
+                    newused.Add(points[i]);
                 }
-                FindShuffle_Nested(points, n, startout);
+                FindShuffle_nested(ref points, i, newused);
             }
         }
+
         static void FindShuffle(List<Point> points)
         {
             for(int i = 0; i < points.Count; i++)
             {
-                Used = new List<int>();
-                Used.AddRange(points[i].Connections);
-                FindShuffle_Nested(points, i, i);
-
+                var localusedpoints = new List<Point>();
+                localusedpoints.Add(points[i]);
+                FindShuffle_nested(ref points, i, localusedpoints);
             }
         }
 
 
-        static void ParallelCheck(ref List<Point> points, ref List<int> LocalUsed, int startout, ref List<Point> locals)
+        static void ParallelCheck(ref List<Point> points, ref List<Point> LocalUsed, ref List<Point> locals)
         {
-            var tempans = new List<Point>();
-            for(int i = startout; i < points.Count; i++)
+            if(locals.Count < LocalUsed.Count)
             {
-                if (!LocalUsed.Contains(points[i].Number))
-                {
-                    tempans.Add(points[i]);
-                }
+                locals = new List<Point>(LocalUsed);
             }
-            if (tempans.Count > locals.Count)
-                locals = new List<Point>(tempans);
         }
-        static void FindShuffle_ParallelNested(ref List<Point> points, List<int> LocalUsed, int v, int startout,ref List<Point> locals)
+        static void FindShuffle_ParallelNested(ref List<Point> points, List<Point> LocalUsed, int v,ref List<Point> locals)
         {
             int b = v + 1;
             if (b == points.Count)
             {
-                ParallelCheck(ref points, ref LocalUsed, startout, ref locals);
+                ParallelCheck(ref points, ref LocalUsed,ref locals);
             }
             for(int n = b; n < points.Count; n++)
             {
-                if (!LocalUsed.Contains(points[n].Number))
+                var tempcons = new List<int>(points[n].Connections);
+                bool check = true;
+                foreach(var p in LocalUsed)
                 {
-                    foreach(var l in points[n].Connections) 
-                    { 
-                        if(!LocalUsed.Contains(l)) { LocalUsed.Add(l); } 
-                    
+                    if (tempcons.Contains(p.Number))
+                    {
+                        check = false; break;
                     }
                 }
-
-                FindShuffle_ParallelNested(ref points, LocalUsed, n, startout,ref locals);
+                var newlocal = new List<Point>(LocalUsed);
+                if (check)
+                {
+                    newlocal.Add(points[n]);
+                }
+                FindShuffle_ParallelNested(ref points, newlocal, n,ref locals);
             }
         }
         static void FindShuffle_Parallel(List<Point> points)
         {
             Parallel.For(0, points.Count, () => new List<Point>(), (i, loop, localans) =>
             {
-                var LocalUsed = new List<int>();
-                LocalUsed.AddRange(points[i].Connections);
-                FindShuffle_ParallelNested(ref points, LocalUsed, i, i,ref localans);
+                var LocalUsedPoints = new List<Point>();
+                LocalUsedPoints.Add(points[i]);
+                FindShuffle_ParallelNested(ref points, LocalUsedPoints, i,ref localans);
                 return localans;
             },
             (x) =>
@@ -157,7 +147,7 @@ namespace Graphs
                 new Point(9, new List<int>{8,10,21}),
                 new Point(10, new List<int>{9,11,22}),
                 new Point(11, new List<int>{10,12,23}),
-                new Point(12, new List<int>{11,13,24}),
+                new Point(12, new List<int>{11,1,24}),
                 new Point(13, new List<int>{1,17,21}),
                 new Point(14, new List<int>{2,18,22}),
                 new Point(15, new List<int>{3,19,23}),
@@ -171,6 +161,9 @@ namespace Graphs
                 new Point(23, new List<int>{11,15,19}),
                 new Point(24, new List<int>{12,16,20})
             };
+            //ответ здесь должен включать вершины: 2,4,7,10,12,13,15,18,20
+            //                                ИЛИ: 1,3,5,7 ,10,14,16,21,23
+            //                                ИЛИ: 3,5,7,9, 12,13,14,16,23
             return ListToFill;
         }
         
